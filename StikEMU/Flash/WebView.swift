@@ -23,7 +23,10 @@ struct WebView: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: WKWebView, context: Context) {
-        // No need to reload the view in this case
+        if uiView.url != url {
+            let request = URLRequest(url: url)
+            uiView.load(request)
+        }
     }
     
     func makeCoordinator() -> Coordinator {
@@ -37,6 +40,12 @@ struct WebView: UIViewRepresentable {
             self.parent = parent
         }
         
-        // Implement WKNavigationDelegate methods if needed
+        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+            print("Erreur de chargement : \(error.localizedDescription)")
+        }
+        
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            print("Chargement terminé")
+        }
     }
 }
