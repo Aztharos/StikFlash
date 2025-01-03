@@ -6,11 +6,26 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct ContentView: View {
     @State private var selectedFile: URL? = nil
-    
+    @State private var isActive: Bool = true
     var body: some View {
-        FlashEmulatorView(selectedFile: $selectedFile) // Use the view directly
+        NavigationStack {
+            ZStack {
+                VStack {
+                    EmptyView()
+                    
+                    Spacer()
+                }
+            }
+            .navigationDestination(isPresented: $isActive) {
+                FlashEmulatorView(selectedFile: $selectedFile)
+                    .navigationBarBackButtonHidden(true)
+            }
+            .navigationSplitViewStyle(.balanced)
+            .navigationBarHidden(true)
+        }
     }
 }
