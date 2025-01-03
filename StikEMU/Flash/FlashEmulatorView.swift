@@ -34,7 +34,7 @@ struct FlashEmulatorView: View {
     
     @Environment(\.verticalSizeClass) var verticalSizeClass
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
-
+    
     var body: some View {
         ZStack {
             WebView(url: URL(string: "http://localhost:\(flashServer.port)")!, webView: $webView)
@@ -47,7 +47,7 @@ struct FlashEmulatorView: View {
             
             VStack {
                 Spacer()
-
+                
                 if verticalSizeClass == .regular && showControls {
                     VStack(spacing: 20) {
                         SpaceBarButton(onPress: {
@@ -64,50 +64,57 @@ struct FlashEmulatorView: View {
                     }
                     .padding(.bottom, 40)
                 }
-
+                
                 Spacer()
             }
-
-            VStack {
-                HStack {
-                    Spacer()
-
-                    Button(action: {
-                        showingSettings.toggle()
-                    }) {
-                        Image(systemName: "gearshape.fill")
-                            .foregroundColor(.blue)
-                            .font(.title2)
-                            .padding()
-                    }
-                    .sheet(isPresented: $showingSettings) {
-                        SettingsView(
-                            keyBindings: $keyBindings,
-                            showControls: $showControls,
-                            useDirectionPad: $useDirectionPad,
-                            thumbstickMapping: $thumbstickMapping,
-                            isPresented: $showingSettings
-                        )
-                        .background(Color(.systemGroupedBackground))
-                    }
-
-                    Button(action: {
-                        showingHomeViewSheet.toggle()
-                    }) {
-                        Image(systemName: "house.fill")
-                            .foregroundColor(.blue)
-                            .font(.title2)
-                            .padding()
-                    }
-                    .sheet(isPresented: $showingHomeViewSheet) {
-                        HomeView(selectedFile: $selectedFile, isPresented: $showingHomeViewSheet)
-                            .presentationDetents([.medium, .large])
-                            .background(Color(.systemGroupedBackground))
-                            .cornerRadius(12)
+            
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    VStack {
+                        HStack {
+                            Text("StikFlash")
+                                .font(.system(size: 36, weight: .bold, design: .rounded))
+                            
+                            Spacer()
+                            
+                            Button(action: {
+                                showingSettings.toggle()
+                            }) {
+                                Image(systemName: "gearshape.fill")
+                                    .foregroundColor(.blue)
+                                    .font(.title2)
+                                    .padding()
+                            }
+                            .sheet(isPresented: $showingSettings) {
+                                SettingsView(
+                                    keyBindings: $keyBindings,
+                                    showControls: $showControls,
+                                    useDirectionPad: $useDirectionPad,
+                                    thumbstickMapping: $thumbstickMapping,
+                                    isPresented: $showingSettings
+                                )
+                                .background(Color(.systemGroupedBackground))
+                            }
+                            
+                            Button(action: {
+                                showingHomeViewSheet.toggle()
+                            }) {
+                                Image(systemName: "house.fill")
+                                    .foregroundColor(.blue)
+                                    .font(.title2)
+                                    .padding()
+                            }
+                            .sheet(isPresented: $showingHomeViewSheet) {
+                                HomeView(selectedFile: $selectedFile, isPresented: $showingHomeViewSheet)
+                                    .presentationDetents([.medium, .large])
+                                    .background(Color(.systemGroupedBackground))
+                                    .cornerRadius(12)
+                            }
+                        }
+                        
+                        Spacer()
                     }
                 }
-
-                Spacer()
             }
         }
         .onAppear {
@@ -138,21 +145,21 @@ struct FlashEmulatorView: View {
             saveKeyBindings() // Save keyBindings when the view disappears
         }
     }
-
+    
     // MARK: - Save and Load Key Bindings
     private func saveKeyBindings() {
         if let data = try? JSONEncoder().encode(keyBindings) {
             UserDefaults.standard.set(data, forKey: "keyBindings")
         }
     }
-
+    
     private func loadKeyBindings() {
         if let data = UserDefaults.standard.data(forKey: "keyBindings"),
            let decoded = try? JSONDecoder().decode([String: String].self, from: data) {
             keyBindings = decoded
         }
     }
-
+    
     // MARK: - Virtual Controller Setup
     private func setupVirtualController() {
         let virtualConfig = GCVirtualController.Configuration()
@@ -180,12 +187,12 @@ struct FlashEmulatorView: View {
             webView.reload()
         }
     }
-
+    
     private func disconnectVirtualController() {
         virtualController?.disconnect()
         virtualController = nil
     }
-
+    
     // MARK: - Handle Gamepad Input
     private func handleGamepadInput(_ gamepad: GCExtendedGamepad) {
         if useDirectionPad {
@@ -193,32 +200,32 @@ struct FlashEmulatorView: View {
         } else {
             handleThumbstick(gamepad.leftThumbstick)
         }
-
+        
         if gamepad.buttonA.isPressed {
             pressSpaceBar()
         } else {
             releaseSpaceBar()
         }
-
+        
         if gamepad.buttonB.isPressed {
             pressButtonB()
         } else {
             releaseButtonB()
         }
-
+        
         if gamepad.buttonX.isPressed {
             pressButtonX()
         } else {
             releaseButtonX()
         }
-
+        
         if gamepad.buttonY.isPressed {
             pressButtonY()
         } else {
             releaseButtonY()
         }
     }
-
+    
     private func handleThumbstick(_ thumbstick: GCControllerDirectionPad) {
         if thumbstickMapping == "Arrow Keys" {
             if thumbstick.up.isPressed {
@@ -232,13 +239,13 @@ struct FlashEmulatorView: View {
             } else {
                 sendKeyUp(key: "ArrowDown", keyCode: 40, code: "ArrowDown")
             }
-
+            
             if thumbstick.left.isPressed {
                 sendKeyPress(key: "ArrowLeft", keyCode: 37, code: "ArrowLeft")
             } else {
                 sendKeyUp(key: "ArrowLeft", keyCode: 37, code: "ArrowLeft")
             }
-
+            
             if thumbstick.right.isPressed {
                 sendKeyPress(key: "ArrowRight", keyCode: 39, code: "ArrowRight")
             } else {
@@ -256,13 +263,13 @@ struct FlashEmulatorView: View {
             } else {
                 sendKeyUp(key: "s", keyCode: 83, code: "KeyS")
             }
-
+            
             if thumbstick.left.isPressed {
                 sendKeyPress(key: "a", keyCode: 65, code: "KeyA")
             } else {
                 sendKeyUp(key: "a", keyCode: 65, code: "KeyA")
             }
-
+            
             if thumbstick.right.isPressed {
                 sendKeyPress(key: "d", keyCode: 68, code: "KeyD")
             } else {
@@ -270,52 +277,52 @@ struct FlashEmulatorView: View {
             }
         }
     }
-
+    
     private func handleDirectionPad(_ dpad: GCControllerDirectionPad) {
         handleThumbstick(dpad)
     }
-
+    
     // MARK: - Button Handlers
     private func pressSpaceBar() {
         guard let key = keyBindings["space"] else { return }
         sendKeyPress(key: key, keyCode: keyCode(for: key), code: key)
     }
-
+    
     private func releaseSpaceBar() {
         guard let key = keyBindings["space"] else { return }
         sendKeyUp(key: key, keyCode: keyCode(for: key), code: key)
     }
-
+    
     private func pressButtonB() {
         guard let key = keyBindings["buttonB"] else { return }
         sendKeyPress(key: key, keyCode: keyCode(for: key), code: key)
     }
-
+    
     private func releaseButtonB() {
         guard let key = keyBindings["buttonB"] else { return }
         sendKeyUp(key: key, keyCode: keyCode(for: key), code: key)
     }
-
+    
     private func pressButtonX() {
         guard let key = keyBindings["buttonX"] else { return }
         sendKeyPress(key: key, keyCode: keyCode(for: key), code: key)
     }
-
+    
     private func releaseButtonX() {
         guard let key = keyBindings["buttonX"] else { return }
         sendKeyUp(key: key, keyCode: keyCode(for: key), code: key)
     }
-
+    
     private func pressButtonY() {
         guard let key = keyBindings["buttonY"] else { return }
         sendKeyPress(key: key, keyCode: keyCode(for: key), code: key)
     }
-
+    
     private func releaseButtonY() {
         guard let key = keyBindings["buttonY"] else { return }
         sendKeyUp(key: key, keyCode: keyCode(for: key), code: key)
     }
-
+    
     // MARK: - JavaScript Injection for Key Events
     private func sendKeyPress(key: String, keyCode: Int, code: String) {
         let jsCode = """
@@ -340,7 +347,7 @@ struct FlashEmulatorView: View {
             }
         }
     }
-
+    
     private func sendKeyUp(key: String, keyCode: Int, code: String) {
         let jsCode = """
         (function() {
@@ -364,7 +371,7 @@ struct FlashEmulatorView: View {
             }
         }
     }
-
+    
     // MARK: - KeyCode Mapping Function
     private func keyCode(for key: String) -> Int {
         switch key {
@@ -403,139 +410,5 @@ struct FlashEmulatorView: View {
         default:
             return 0
         }
-    }
-}
-
-// MARK: - SettingsView
-struct SettingsView: View {
-    @Binding var keyBindings: [String: String]
-    @Binding var showControls: Bool
-    @Binding var useDirectionPad: Bool
-    @Binding var thumbstickMapping: String
-    @Binding var isPresented: Bool
-
-    @State private var showResetConfirmation = false // Added state for alert
-
-    let keyOptions = ["Space", "KeyA", "KeyB", "KeyX", "KeyY", "KeyW", "KeyS", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 12) {
-                // Header with Settings Title, Done Button, and Reset Button
-                HStack {
-                    Text("Settings")
-                        .font(.title2)
-                        .bold()
-                    Spacer()
-                    // Reset Button
-                    Button(action: {
-                        showResetConfirmation = true // Show confirmation alert
-                    }) {
-                        Text("Reset")
-                            .font(.headline)
-                            .foregroundColor(.red)
-                    }
-                    .padding(.trailing, 10)
-
-                    // Done Button
-                    Button(action: {
-                        isPresented = false
-                    }) {
-                        Text("Done")
-                            .font(.headline)
-                            .foregroundColor(.blue)
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.top, 20)
-                .alert(isPresented: $showResetConfirmation) {
-                    Alert(
-                        title: Text("Reset Settings"),
-                        message: Text("Are you sure you want to reset all settings to their default values?"),
-                        primaryButton: .destructive(Text("Reset")) {
-                            resetSettings()
-                        },
-                        secondaryButton: .cancel()
-                    )
-                }
-
-                // Rest of the settings UI
-                Toggle("Show UI Controls", isOn: $showControls)
-                    .padding(.horizontal)
-
-                Toggle("Use Direction Pad", isOn: $useDirectionPad)
-                    .padding(.horizontal)
-
-                Picker("Thumbstick Mapping", selection: $thumbstickMapping) {
-                    Text("Arrow Keys").tag("Arrow Keys")
-                    Text("WASD").tag("WASD")
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding(.horizontal)
-
-                ForEach(["space", "buttonB", "buttonX", "buttonY"], id: \.self) { key in
-                    HStack {
-                        Text("\(key.capitalized):")
-                        Spacer()
-                        Picker(selection: binding(for: key), label: Text(keyBindings[key] ?? "")) {
-                            ForEach(keyOptions, id: \.self) { option in
-                                Text(option).tag(option)
-                            }
-                        }
-                        .pickerStyle(MenuPickerStyle())
-                        .frame(width: 150)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
-                    }
-                    .padding(.horizontal)
-                }
-
-                // Credits Section
-                HStack {
-                    Text("Credits")
-                        .font(.title2)
-                        .bold()
-                    Spacer()
-                }
-                .padding(.horizontal)
-                .padding(.top, 20)
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("App made by Stephen")
-                        .font(.subheadline)
-
-                    Text("Flash code by Ruffle")
-                        .font(.subheadline)
-                }
-                .padding(.vertical, 10)
-                .background(Color(.systemGray6))
-                .cornerRadius(10)
-                .padding(.horizontal)
-            }
-            .background(Color(.systemGroupedBackground))
-            .cornerRadius(12)
-            .padding()
-        }
-        .preferredColorScheme(.dark) // This forces dark mode
-    }
-
-    private func resetSettings() {
-        // Reset the settings to default values
-        keyBindings = [
-            "space": "Space",
-            "buttonB": "KeyB",
-            "buttonX": "KeyX",
-            "buttonY": "KeyY"
-        ]
-        showControls = true
-        useDirectionPad = false
-        thumbstickMapping = "Arrow Keys"
-    }
-
-    private func binding(for key: String) -> Binding<String> {
-        Binding<String>(
-            get: { keyBindings[key] ?? "" },
-            set: { newValue in keyBindings[key] = newValue }
-        )
     }
 }
